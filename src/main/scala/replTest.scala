@@ -1,18 +1,38 @@
 import scala.io.StdIn.readLine
 import scala.util.control.Breaks._
+import org.apache.commons.cli._
 
 object replTest {
 
-    //refers to any object that may be found within a location. Relegated soley to strings right now. 
-    case class Object(fileName:String, content:String)
-    case class Location(locationName:String, items:List[Object], pathways:List[Location], parentDirectory:Location)
+    //represents a non directory file(txt)
+    class Thing{
+        var fileName:String = ""
+        var content:String = ""
+        var storage:Int = content.length
+    }
+    //represents a file directory
+    class Location{
+        var locationName:String = ""
+        var items:List[Thing] = List()
+        var pathways:List[Location] = List()
+        var parentDirectory:Location = null
+        var storageSize:Int = 10000
+    }
     
-    val test:Object = Object("test.txt", "stuff!!!!")
-    //this is paradoxical. one can't reference the other since they both may contain initializations that haven't happened yet. 
-    //ask Dr. Hibbs about how to fix this.
-    //val testDirectory
-    val home:Location = Location("jbauer", List(test), List(), root)
-    val root:Location = Location("/", List(), List(home), null)
+     //base class initialization
+        //-----------------------
+        val test:Thing = new Thing
+        test.fileName = "test.txt"
+        test.content = "this is a test!"
+        //really messy fix this/automate it
+        val home:Location = new Location
+        home.locationName = "jbauer" 
+        val root:Location = new Location
+        root.locationName = "/"
+        home.parentDirectory = root
+        root.pathways = List(home)
+        //-----------------------
+
     class player  {
         //name
         var name:String = ""
@@ -52,7 +72,10 @@ object replTest {
         }
     }
 
-    def main(args:Array[String]):Unit ={
+    def main(args:Array[String]):Unit =  {
+        
+
+        //player initialization
         //-----------------------
         val player = new player
         player.name = "Julian"
@@ -61,28 +84,19 @@ object replTest {
         //-----------------------
         var using = true
 
-        //TEST
-        //split stores a null variable if there's a slash at the beginning.
-        //store all values in a new array without null values to get the accurate
-        //array of pathways.
-        var testy = "/jbauer/test/home"
-        var arrtest = testy.split("/")
-        //**************************
-
-        println(arrtest.mkString(","))
-        while(using){
-            val data = readLine
-            //store should never be more than 2 long. I.E. "cd /test", only two arguments.
-            val store = data.split(" ")
-            val command = store(0)
-            
-            command match{
-                case "cd" => {var info:String = store(1); player.cd(info)}
-                case "pwd" => {println(player.current_working_directory.locationName)}
-                case "ls" => {player.ls}
-                case "exit" => {using = false}
-            }
-            }
+        val options:Options = new Options();
+        val parser = new DefaultParser()
+        
+        
+        options.addOption("exit", "e", false, "Allows user to exit program")
+        //println(options)
+        val data = readLine()
+        val store = data.split(" ")
+        
+        val cmd:CommandLine = parser.parse(options,store)
+        if(cmd.hasOption("exit") || cmd.hasOption("e")){
+            println("works!")
+        }
 
         }
     }
